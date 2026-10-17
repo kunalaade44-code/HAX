@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" data-scroll-behavior="smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About — More than one lens. — Sarthak Sharma</title>
+  <meta name="description" content="An engineer’s understanding. An educator’s clarity. A builder’s sense of ownership." />
+  <meta name="theme-color" content="#030303" />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+  <!-- Preconnect & Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/src/style.css" />
+  <style>
+    .editorial-page {
+      padding: 160px var(--gutter) 60px;
+      max-width: 1400px;
+      margin: auto;
+      position: relative;
+      z-index: 5;
+    }
+    .editorial-intro {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 70px;
+    }
+    .editorial-intro > .eyebrow {
+      color: var(--blue);
+      font-size: 10px;
+    }
+    .editorial-intro h1 {
+      margin: 28px 0;
+      font-size: clamp(60px, 8.5vw, 130px);
+      line-height: 1;
+    }
+    .editorial-intro > p {
+      color: #b9b0a5;
+      max-width: 650px;
+      font-size: 19px;
+      line-height: 1.6;
+    }
+    .editorial-layout {
+      display: grid;
+      grid-template-columns: 1fr 2.3fr;
+      gap: 9%;
+      margin-top: 60px;
+    }
+    .editorial-layout aside {
+      position: sticky;
+      top: 100px;
+      align-self: start;
+    }
+    .editorial-layout aside nav {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin: 24px 0 40px;
+      font-size: 13px;
+      color: #b8b0a8;
+    }
+    .editorial-layout aside nav a:hover {
+      color: var(--blue);
+    }
+    .editorial-section {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 55px;
+      margin-bottom: 50px;
+      scroll-margin-top: 110px;
+    }
+    .editorial-section > .eyebrow {
+      color: #aa8e76;
+      font-size: 9px;
+    }
+    .editorial-section h2 {
+      font-size: clamp(34px, 3.8vw, 54px);
+      margin: 14px 0 24px;
+      line-height: 1.1;
+    }
+    .editorial-section p {
+      color: #bdb5aa;
+      font-size: 15px;
+      line-height: 1.8;
+      margin-bottom: 18px;
+    }
+    .competency {
+      border-top: 1px solid var(--line);
+      padding: 18px 0;
+    }
+    .competency summary {
+      display: flex;
+      justify-content: space-between;
+      cursor: pointer;
+      font-size: 16px;
+      list-style: none;
+      color: var(--ink);
+    }
+    .competency summary span {
+      font-size: 18px;
+      transition: transform 0.25s ease;
+    }
+    .competency[open] summary span {
+      transform: rotate(45deg);
+    }
+    .competency p {
+      padding-top: 16px;
+      font-size: 14px;
+      color: #a8a096;
+    }
+    @media (max-width: 900px) {
+      .editorial-layout {
+        grid-template-columns: 1fr;
+      }
+      .editorial-layout aside {
+        position: static;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Scroll Progress Indicator -->
+  <div id="scroll-progress" class="scroll-progress" aria-hidden="true"></div>
+
+  <!-- Ambient Backdrop -->
+  <div class="scene-backdrop" aria-hidden="true">
+    <canvas id="backdrop-canvas"></canvas>
+  </div>
+
+  <!-- Navigation -->
+  <header class="navigation refined-navigation glass-navigation" data-hidden="false">
+    <a class="wordmark" href="/" aria-label="Sarthak Sharma Home">
+      <div class="nav-identity">
+        <span>Sarthak Sharma</span>
+      </div>
+    </a>
+
+    <nav class="nav-links" aria-label="Main navigation" id="main-nav">
+      <a class="nav-destination" href="/#work">
+        <span>Work</span>
+        <span class="nav-mobile-arrow" aria-hidden="true">↗</span>
+      </a>
+      <a class="nav-destination active" href="/about.html">
+        <span>About</span>
+        <span class="nav-mobile-arrow" aria-hidden="true">↗</span>
+      </a>
+      <a class="nav-destination" href="/#content">
+        <span>Content</span>
+        <span class="nav-mobile-arrow" aria-hidden="true">↗</span>
+      </a>
+      <a class="nav-destination" href="/#speaking">
+        <span>Speaking</span>
+        <span class="nav-mobile-arrow" aria-hidden="true">↗</span>
+      </a>
+      <a class="nav-contact" href="/#contact">
+        <span>Let’s talk</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 7h10v10"></path>
+          <path d="M7 17 17 7"></path>
+        </svg>
+      </a>
+    </nav>
+  </header>
+
+  <!-- Editorial Page Content -->
+  <main id="main" class="editorial-page">
+    <div class="editorial-intro">
+      <span class="eyebrow">THE PERSON / THE PERSPECTIVE</span>
+      <h1>More than one lens.</h1>
+      <p>An engineer’s understanding. An educator’s clarity. A builder’s sense of ownership.</p>
+    </div>
+
+    <div class="editorial-layout">
+      <aside>
+        <span class="eyebrow">IN THIS CHAPTER</span>
+        <nav aria-label="On this page">
+          <a href="#section-0">My story</a>
+          <a href="#section-1">Sheryians Coding School</a>
+          <a href="#section-2">From classroom to funded brand</a>
+          <a href="#section-3">The business of learning</a>
+          <a href="#section-4">Independent work</a>
+          <a href="#section-5">Education &amp; home</a>
+          <a href="#capabilities">Depth &amp; perspective</a>
+        </nav>
+        <a class="text-link" href="/#contact">
+          Start a conversation
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 7h10v10"></path>
+            <path d="M7 17 17 7"></path>
+          </svg>
+        </a>
+      </aside>
+
+      <div>
+        <section class="editorial-section" id="section-0">
+          <span class="eyebrow">01</span>
+          <h2>My story</h2>
+          <p>I started working with Sheryians Coding School in 2021, while I was still pursuing my engineering degree. What started with software development and teaching gradually turned into something much bigger.</p>
+          <p>Over the years, I’ve had the opportunity to work on almost every side of a technology education business.</p>
+          <p>I’ve built software products, taught 50,000+ students, created technical content, led educational programs, worked with cross-functional teams, and contributed to growing Sheryians’ offline revenue by 2.5X.</p>
+          <p>On the technology side, I’ve worked on Sheryians’ course-selling platform and Learning Management System, connecting product development, frontend engineering, UI/UX, and the needs of real students.</p>
+          <p>As an educator and creator, I’ve helped make software development more accessible to thousands of learners. My work includes technical courses, educational videos, workshops, university talks, and collaborations with people working across the technology industry.</p>
+          <p>I’ve also been closely involved in the business and operational side of education, managing teams, working with sales and marketing, improving student experience, and helping educational programs grow.</p>
+          <p>What I enjoy most is the intersection of all these things. I like understanding how products are built, why people use them, how businesses grow, and how good communication can make technology more accessible.</p>
+          <p>I’m particularly interested in Product Management, EdTech Leadership, Developer Education, Technical Content, Developer Relations, and building products that solve meaningful problems.</p>
+          <p>I believe my biggest strength is being able to understand a problem from multiple perspectives: as an engineer, as an educator, as someone building the product, and as someone working directly with its users.</p>
+          <p>Today, I’m continuing to build my independent professional identity while exploring opportunities to work with ambitious people and organizations across technology and education.</p>
+        </section>
+
+        <section class="editorial-section" id="section-1">
+          <span class="eyebrow">02</span>
+          <h2>Sheryians Coding School</h2>
+          <p>October 2021–present · Core team member · Engineering, education, and program leadership.</p>
+          <p>Sheryians is a Bhopal-based technology education organization offering online courses, offline classrooms, intensive bootcamps, and public educational content. I have helped build and grow it alongside the founding and core team.</p>
+          <p>My responsibilities connect technology and product planning with education, content, leadership, business, and brand representation. They include developing the course-selling platform, frontend interfaces and learning experiences; understanding student requirements; teaching and creating educational resources; and representing the organization through videos, university seminars and workshops.</p>
+        </section>
+
+        <section class="editorial-section" id="section-2">
+          <span class="eyebrow">03</span>
+          <h2>From classroom to funded brand</h2>
+          <p>Since joining in 2021, I’ve helped grow Sheryians alongside its founding and core team—from its early coaching days into a multimillion-dollar EdTech startup. My contribution spans engineering, teaching, content, program leadership, and business operations.</p>
+          <p>Sheryians signed its investment agreement with PhysicsWallah in November 2024, with the investment completed in January 2025. This is an organizational milestone in a shared building journey.</p>
+          <a class="text-link" href="https://www.pw.live/version14/assets/pdfs/letter_agreement_dated_27th_november_2024.pdf" target="_blank" rel="noopener noreferrer">
+            Read the 2024 investment record
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 7h10v10"></path>
+              <path d="M7 17 17 7"></path>
+            </svg>
+          </a>
+        </section>
+
+        <section class="editorial-section" id="section-3">
+          <span class="eyebrow">04</span>
+          <h2>The business of learning</h2>
+          <p>Contributed to 2.5X offline revenue growth at Sheryians.</p>
+          <p>My leadership work includes offline programs, instructors and mentors, classroom and academic delivery, admissions and counselling, student experience, educational initiatives, resource planning, and operational execution. Working with sales, marketing and customers helps me connect academic delivery to broader business objectives.</p>
+        </section>
+
+        <section class="editorial-section" id="section-4">
+          <span class="eyebrow">05</span>
+          <h2>Independent work</h2>
+          <p>50+ freelance clients served across web development, frontend engineering, UI/UX and client-facing delivery. The work spans understanding requirements, translating business needs into interfaces, communicating clearly, and delivering functional websites and applications.</p>
+          <p>Creative frontend development is another thread: interactive websites, responsive interfaces, animation, and visually rich experiences using HTML, CSS, JavaScript, React, GSAP, Framer Motion, and Three.js.</p>
+        </section>
+
+        <section class="editorial-section" id="section-5">
+          <span class="eyebrow">06</span>
+          <h2>Education &amp; home</h2>
+          <p>B.Tech in Computer Science Engineering, completed in 2024. Sagar Institute of Research &amp; Technology, Bhopal, affiliated with Rajiv Gandhi Proudyogiki Vishwavidyalaya (RGPV).</p>
+          <p>Based in Bhopal, Madhya Pradesh, India. Building products and educating developers since October 2021.</p>
+        </section>
+
+        <!-- Capabilities Accordion -->
+        <section class="editorial-section" id="capabilities">
+          <h2>Depth &amp; perspective.</h2>
+
+          <details class="competency" open>
+            <summary>Established strengths <span>+</span></summary>
+            <p>Frontend engineering, JavaScript, React, teaching, and product development.</p>
+          </details>
+
+          <details class="competency">
+            <summary>Frontend engineering <span>+</span></summary>
+            <p>HTML5, CSS3, JavaScript, TypeScript, React, Next.js, Redux Toolkit, Tailwind CSS.</p>
+          </details>
+
+          <details class="competency">
+            <summary>Creative development <span>+</span></summary>
+            <p>GSAP, Framer Motion, Three.js, responsive design, animations, interactive web experiences.</p>
+          </details>
+
+          <details class="competency">
+            <summary>Backend engineering <span>+</span></summary>
+            <p>Node.js, Express.js, MongoDB, Prisma, API development, authentication, application integrations.</p>
+          </details>
+
+          <details class="competency">
+            <summary>Additional engineering exposure <span>+</span></summary>
+            <p>SQL fundamentals, PostgreSQL, Redis, BullMQ, WebRTC, S3-related architecture.</p>
+          </details>
+
+          <details class="competency">
+            <summary>Product &amp; design <span>+</span></summary>
+            <p>Figma, UI/UX design, product development, user experience, product thinking, requirement analysis, problem solving.</p>
+          </details>
+
+          <details class="competency">
+            <summary>Leadership &amp; business <span>+</span></summary>
+            <p>Cross-functional team leadership, EdTech operations, program management, growth, student experience, content strategy, team coordination.</p>
+          </details>
+
+          <details class="competency">
+            <summary>Content &amp; communication <span>+</span></summary>
+            <p>Technical education, public speaking, technical storytelling, content creation, developer community engagement, brand communication.</p>
+          </details>
+        </section>
+      </div>
+    </div>
+
+    <!-- Editorial Footer -->
+    <footer class="editorial-footer" style="margin-top: 80px; padding-top: 40px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #a49a8f;">
+      <a href="/" style="font-family: var(--font-display); font-size: 22px; color: var(--ink);">Sarthak Sharma</a>
+      <div style="display: flex; gap: 20px;">
+        <a href="https://www.linkedin.com/in/sarthack-sharma" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+        <a href="https://www.instagram.com/sarthack.sharma" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
+        <a href="https://www.youtube.com/@sarthack.sharma" target="_blank" rel="noopener noreferrer">YouTube ↗</a>
+        <a href="https://github.com/saarthack" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      </div>
+      <span>Bhopal, India</span>
+    </footer>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

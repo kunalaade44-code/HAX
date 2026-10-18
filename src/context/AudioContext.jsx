@@ -37,14 +37,36 @@ export function AudioProvider({ children }) {
     return audioCtxRef.current;
   };
 
+  // Ensure that whenever isMuted becomes true, all sounds and speech stop immediately
+  useEffect(() => {
+    if (isMuted) {
+      stopAllSounds();
+    }
+  }, [isMuted]);
+
   const toggleMute = () => {
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
     if (nextMuted) {
       stopAllSounds();
     } else {
-      // Play a tiny confirmation chime on unmute
-      playTone(523.25, 0.25, 'sine', 0.08); // High C
+      // AudioContext needs resume if suspended
+      const ctx = getAudioContext();
+      if (ctx) {
+        try {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+          gain.gain.setValueAtTime(0.001, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.25);
+        } catch (e) {}
+      }
     }
   };
 
@@ -53,6 +75,7 @@ export function AudioProvider({ children }) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
     }
+    stopAllASMR();
     activeOscillatorsRef.current.forEach((node) => {
       try {
         node.stop();
@@ -190,8 +213,335 @@ export function AudioProvider({ children }) {
     }
   };
 
+  // ASMR Soundscape active nodes and intervals
+  const asmrNodesRef = useRef({
+    rain: null,
+    crickets: null,
+    brownNoise: null,
+  });
+  const asmrMusicBoxTimerRef = useRef(null);
+
+  const createPinkNoiseBuffer = (ctx) => {
+    const bufferSize = ctx.sampleRate * 2;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.96900 * b2 + white * 0.1538520;
+      b3 = 0.86650 * b3 + white * 0.3104856;
+      b4 = 0.55000 * b4 + white * 0.5329522;
+      b5 = -0.7616 * b5 - white * 0.0168980;
+      data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.08;
+      b6 = white * 0.115926;
+    }
+    return buffer;
+  };
+
+  const createBrownNoiseBuffer = (ctx) => {
+    const bufferSize = ctx.sampleRate * 2;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let lastOut = 0.0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      data[i] = (lastOut + 0.02 * white) / 1.02;
+      lastOut = data[i];
+      data[i] *= 2.8;
+    }
+    return buffer;
+  };
+
+  const stopASMRChannel = (channel) => {
+    if (channel === 'musicBox') {
+      if (asmrMusicBoxTimerRef.current) {
+        clearInterval(asmrMusicBoxTimerRef.current);
+        asmrMusicBoxTimerRef.current = null;
+      }
+      return;
+    }
+    const nodeObj = asmrNodesRef.current[channel];
+    if (nodeObj) {
+      try {
+        nodeObj.gain.gain.setValueAtTime(nodeObj.gain.gain.value, getAudioContext().currentTime);
+        nodeObj.gain.gain.linearRampToValueAtTime(0.0001, getAudioContext().currentTime + 0.3);
+        setTimeout(() => {
+          try {
+            nodeObj.source.stop();
+            nodeObj.source.disconnect();
+          } catch (e) {}
+        }, 350);
+      } catch (e) {}
+      asmrNodesRef.current[channel] = null;
+    }
+  };
+
+  const setASMRChannelVolume = (channel, volume) => {
+    if (channel === 'musicBox') return;
+    const nodeObj = asmrNodesRef.current[channel];
+    if (nodeObj && audioCtxRef.current) {
+      try {
+        nodeObj.gain.gain.setValueAtTime(nodeObj.gain.gain.value, audioCtxRef.current.currentTime);
+        nodeObj.gain.gain.linearRampToValueAtTime(Math.max(0.0001, volume * 0.3), audioCtxRef.current.currentTime + 0.1);
+      } catch (e) {}
+    }
+  };
+
+  const startASMRChannel = (channel, volume = 0.5) => {
+    if (isMuted) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    stopASMRChannel(channel);
+
+    if (channel === 'rain') {
+      try {
+        const buffer = createPinkNoiseBuffer(ctx);
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1200, ctx.currentTime);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(volume * 0.25, ctx.currentTime + 0.8);
+
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        source.start();
+        asmrNodesRef.current.rain = { source, gain };
+      } catch (e) {
+        console.warn('Rain ASMR error', e);
+      }
+    } else if (channel === 'crickets') {
+      try {
+        // High frequency modulated bandpass for summer crickets
+        const buffer = createPinkNoiseBuffer(ctx);
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(4600, ctx.currentTime);
+        filter.Q.setValueAtTime(8, ctx.currentTime);
+
+        // Amplitude modulation for cricket chirping cadence
+        const lfo = ctx.createOscillator();
+        lfo.frequency.setValueAtTime(4.5, ctx.currentTime); // 4.5 chirps/sec
+
+        const lfoGain = ctx.createGain();
+        lfoGain.gain.setValueAtTime(0.08, ctx.currentTime);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(volume * 0.18, ctx.currentTime + 0.8);
+
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        source.start();
+        asmrNodesRef.current.crickets = { source, gain };
+      } catch (e) {
+        console.warn('Crickets ASMR error', e);
+      }
+    } else if (channel === 'brownNoise') {
+      try {
+        const buffer = createBrownNoiseBuffer(ctx);
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(320, ctx.currentTime);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(volume * 0.32, ctx.currentTime + 0.8);
+
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        source.start();
+        asmrNodesRef.current.brownNoise = { source, gain };
+      } catch (e) {
+        console.warn('Brown noise error', e);
+      }
+    } else if (channel === 'musicBox') {
+      const melody = [523.25, 659.25, 783.99, 659.25, 880, 783.99, 659.25, 523.25];
+      let noteIdx = 0;
+      const playNext = () => {
+        if (!isMuted) {
+          playMusicBoxChime(melody[noteIdx % melody.length], { volume: volume * 0.1, duration: 1.8 });
+          noteIdx++;
+        }
+      };
+      playNext();
+      asmrMusicBoxTimerRef.current = setInterval(playNext, 1600);
+    }
+  };
+
+  const stopAllASMR = () => {
+    stopASMRChannel('rain');
+    stopASMRChannel('crickets');
+    stopASMRChannel('brownNoise');
+    stopASMRChannel('musicBox');
+  };
+
+  // Sound Effect: Pip's Purr / Cozy Petting Reaction
+  const playPipPurr = () => {
+    if (isMuted) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(130, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(145, ctx.currentTime + 0.3);
+      osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.7);
+
+      lfo.frequency.setValueAtTime(12, ctx.currentTime); // 12Hz purr flutter
+      lfoGain.gain.setValueAtTime(15, ctx.currentTime);
+      lfo.connect(osc.frequency);
+
+      gain.gain.setValueAtTime(0.001, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.75);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      lfo.start();
+      osc.start();
+      osc.stop(ctx.currentTime + 0.8);
+      lfo.stop(ctx.currentTime + 0.8);
+    } catch (e) {}
+  };
+
+  // Sound Effect: Pillow Squish / Puffy Fluff
+  const playPillowSquish = () => {
+    if (isMuted) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    try {
+      const buffer = createPinkNoiseBuffer(ctx);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(650, ctx.currentTime);
+      filter.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.22);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.14, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.22);
+
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      source.start();
+      source.stop(ctx.currentTime + 0.25);
+    } catch (e) {}
+  };
+
+  // Sound Effect: Bedside Silver Bell
+  const playAlarmBell = () => {
+    if (isMuted) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    try {
+      [1567.98, 3135.96].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+        gain.gain.setValueAtTime(0.001, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(i === 0 ? 0.14 : 0.06, ctx.currentTime + 0.005);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.9);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.95);
+      });
+    } catch (e) {}
+  };
+
+  // Sound Effect: Harp / Constellation note
+  const playHarpNote = (semitone = 0) => {
+    if (isMuted) return;
+    const baseFreq = 392.0; // G4
+    const freq = baseFreq * Math.pow(2, semitone / 12);
+    playMusicBoxChime(freq, { duration: 1.5, volume: 0.15, overtone: true });
+  };
+
+  // Sound Effect: Telescope Constellation Complete
+  const playTelescopeComplete = () => {
+    if (isMuted) return;
+    const scale = [0, 4, 7, 11, 14, 16, 19];
+    scale.forEach((semi, idx) => {
+      setTimeout(() => {
+        playHarpNote(semi);
+      }, idx * 110);
+    });
+  };
+
+  // Sound Effect: Dream Blender Bubbling
+  const playBubblingBlender = () => {
+    if (isMuted) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    for (let i = 0; i < 5; i++) {
+      setTimeout(() => {
+        if (isMuted) return;
+        try {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          const startF = 350 + Math.random() * 200;
+          const endF = startF + 250 + Math.random() * 200;
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(startF, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(endF, ctx.currentTime + 0.08);
+
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start();
+          osc.stop(ctx.currentTime + 0.1);
+        } catch (e) {}
+      }, i * 75);
+    }
+  };
+
   const speakText = (text, options = {}) => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    // Strictly do not speak when muted
+    if (isMuted) {
+      stopSpeech();
+      return;
+    }
 
     try {
       window.speechSynthesis.cancel();
@@ -263,6 +613,17 @@ export function AudioProvider({ children }) {
         speakText,
         stopSpeech,
         isSpeaking,
+        // New unique ASMR & interactive effects
+        startASMRChannel,
+        stopASMRChannel,
+        setASMRChannelVolume,
+        stopAllASMR,
+        playPipPurr,
+        playPillowSquish,
+        playAlarmBell,
+        playHarpNote,
+        playTelescopeComplete,
+        playBubblingBlender,
       }}
     >
       {children}
@@ -277,3 +638,4 @@ export function useAudio() {
   }
   return context;
 }
+

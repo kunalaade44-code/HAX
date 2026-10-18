@@ -1,7 +1,7 @@
 {
   "name": "hax",
   "version": "1.0.0",
-  "description": "",
+  "description": "Pip's Midnight Dreamverse — An interactive 3D storybook portfolio for Pip the Skull Baby",
   "type": "module",
   "scripts": {
     "dev": "vite",

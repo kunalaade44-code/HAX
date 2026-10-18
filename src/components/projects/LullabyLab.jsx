@@ -3,7 +3,7 @@ import { Play, Square, Music, Volume2, Sparkles, RefreshCw, Disc } from 'lucide-
 import { useAudio } from '../../context/AudioContext';
 
 export function LullabyLab() {
-  const { isMuted, setIsMuted, playMusicBoxChime, stopAllSounds } = useAudio();
+  const { playMusicBoxChime, stopAllSounds } = useAudio();
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeStep, setActiveStep] = useState(-1);
   const [selectedTempo, setSelectedTempo] = useState('dreamy'); // 'sleepy' | 'dreamy' | 'gentle'
@@ -128,10 +128,6 @@ export function LullabyLab() {
   const handleStartLullaby = (tempoKey = selectedTempo) => {
     handleStopLullaby();
 
-    if (isMuted) {
-      setIsMuted(false);
-    }
-
     const melody = melodies[tempoKey] || melodies.dreamy;
     setIsPlaying(true);
     let step = 0;
@@ -215,9 +211,6 @@ export function LullabyLab() {
   }, []);
 
   const handleKeyClick = (freq) => {
-    if (isMuted) {
-      setIsMuted(false);
-    }
     playMusicBoxChime(freq, { duration: 1.4, volume: 0.16 });
   };
 

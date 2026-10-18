@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Send, Trash2, Heart, Sparkles, Star } from 'lucide-react';
+import { BookOpen, Send, Trash2, Heart, Sparkles, Star, FlaskConical } from 'lucide-react';
 import { useAudio } from '../context/AudioContext';
+import { DreamBlender } from './DreamBlender';
 
 export function DreamJournal() {
   const { playChime, playTone } = useAudio();
+  const [activeTab, setActiveTab] = useState('guestbook'); // 'guestbook' | 'blender'
 
   const initialDreams = [
     {
@@ -84,17 +86,50 @@ export function DreamJournal() {
       <div className="section-header">
         <span className="section-badge">
           <BookOpen size={13} />
-          BEDTIME GUESTBOOK · DREAMS ARCHIVE
+          BEDTIME GUESTBOOK &amp; ALCHEMY LAB
         </span>
         <h2 className="section-title">
-          The Midnight <em>Dream Journal</em>
+          The Midnight <em>Dream Repository</em>
         </h2>
         <p className="section-subtitle">
-          Whisper a nighttime wish, a peaceful thought, or a sleepy hope into Pip’s dream repository.
+          Whisper a nighttime wish into Pip’s dream journal, or blend magical bedtime ingredients to generate your official Dream Passport!
         </p>
+
+        {/* Tab Switcher */}
+        <div className="journal-tabs-bar" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'guestbook'}
+            onClick={() => {
+              playChime(523.25);
+              setActiveTab('guestbook');
+            }}
+            className={`journal-tab-btn ${activeTab === 'guestbook' ? 'active' : ''}`}
+          >
+            <BookOpen size={15} />
+            <span>Whisper a Wish (Guestbook)</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'blender'}
+            onClick={() => {
+              playChime(659.25);
+              setActiveTab('blender');
+            }}
+            className={`journal-tab-btn ${activeTab === 'blender' ? 'active' : ''}`}
+          >
+            <FlaskConical size={15} />
+            <span>Dream Alchemy &amp; Passport</span>
+          </button>
+        </div>
       </div>
 
-      <div className="journal-grid">
+      {activeTab === 'blender' ? (
+        <DreamBlender />
+      ) : (
+        <div className="journal-grid">
         {/* Left Column: Form to Write Dream */}
         <div className="journal-form-card">
           <div className="card-top-header">
@@ -191,6 +226,8 @@ export function DreamJournal() {
           </div>
         </div>
       </div>
+      )}
     </section>
   );
 }
+
